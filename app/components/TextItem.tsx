@@ -16,6 +16,11 @@ interface TextItemProps {
     x: number;
     y: number;
     fontSize: string;
+    useShadow?: boolean;
+    shadowColor?: string;
+    shadowBlur?: number;
+    shadowOffsetX?: number;
+    shadowOffsetY?: number;
   };
   updateTextItem: (id: string, updates: Partial<TextItem>) => void;
   removeTextItem: (id: string) => void;
@@ -69,6 +74,61 @@ export function TextItem({
         className="w-20"
         placeholder="Y"
       />
+
+      <div className="flex items-center gap-2">
+        <label className="flex items-center gap-2">
+          <Input
+            type="checkbox"
+            checked={item.useShadow}
+            onChange={(e) =>
+              updateTextItem(item.id, { useShadow: e.target.checked })
+            }
+            className="w-4 h-4"
+          />
+          <span className="text-sm">Shadow</span>
+        </label>
+      </div>
+
+      {item.useShadow && (
+        <>
+          <Input
+            type="color"
+            value={item.shadowColor || "#000000"}
+            onChange={(e) =>
+              updateTextItem(item.id, { shadowColor: e.target.value })
+            }
+            className="w-12 h-10 p-1"
+          />
+          <Input
+            type="number"
+            value={item.shadowBlur || 4}
+            onChange={(e) =>
+              updateTextItem(item.id, { shadowBlur: Number(e.target.value) })
+            }
+            className="w-20"
+            placeholder="Blur"
+          />
+          <Input
+            type="number"
+            value={item.shadowOffsetX || 2}
+            onChange={(e) =>
+              updateTextItem(item.id, { shadowOffsetX: Number(e.target.value) })
+            }
+            className="w-20"
+            placeholder="X Offset"
+          />
+          <Input
+            type="number"
+            value={item.shadowOffsetY || 2}
+            onChange={(e) =>
+              updateTextItem(item.id, { shadowOffsetY: Number(e.target.value) })
+            }
+            className="w-20"
+            placeholder="Y Offset"
+          />
+        </>
+      )}
+
       <Button
         variant="destructive"
         onClick={() => removeTextItem(item.id)}

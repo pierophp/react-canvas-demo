@@ -17,6 +17,12 @@ interface TextItem {
   color: string;
   x: number;
   y: number;
+  fontSize: string;
+  useShadow?: boolean;
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
 }
 
 export function meta({}: Route.MetaArgs) {
@@ -29,14 +35,20 @@ export function meta({}: Route.MetaArgs) {
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [textItems, setTextItems] = useState<TextItem[]>([
-    { id: "1", text: "", color: "#FFFFFF", x: 20, y: 40 },
+    {
+      id: "1",
+      text: "",
+      color: "#FFFFFF",
+      x: 20,
+      y: 40,
+      fontSize: "16",
+      useShadow: false,
+      shadowColor: "#000000",
+      shadowBlur: 4,
+      shadowOffsetX: 2,
+      shadowOffsetY: 2,
+    },
   ]);
-  // Shadow states
-  const [shadowColor, setShadowColor] = useState("#000000");
-  const [shadowBlur, setShadowBlur] = useState(4);
-  const [shadowOffsetX, setShadowOffsetX] = useState(2);
-  const [shadowOffsetY, setShadowOffsetY] = useState(2);
-  const [useShadow, setUseShadow] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -63,6 +75,12 @@ export default function Home() {
         color: "#FFFFFF",
         x: 20,
         y: 40 + prev.length * 30, // Offset Y position for each new item
+        fontSize: "16",
+        useShadow: false,
+        shadowColor: "#000000",
+        shadowBlur: 4,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2,
       },
     ]);
   };
@@ -84,27 +102,24 @@ export default function Home() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Redraw image to clear previous text
     const img = new Image();
     img.src = "/tree.jpg";
     img.onload = () => {
       ctx.drawImage(img, 0, 0);
 
-      // Set shadow properties
-      if (useShadow) {
-        ctx.shadowColor = shadowColor;
-        ctx.shadowBlur = shadowBlur;
-        ctx.shadowOffsetX = shadowOffsetX;
-        ctx.shadowOffsetY = shadowOffsetY;
-      } else {
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-      }
-
-      // Draw each text item
       textItems.forEach((item) => {
+        if (item.useShadow) {
+          ctx.shadowColor = item.shadowColor || "#000000";
+          ctx.shadowBlur = item.shadowBlur || 4;
+          ctx.shadowOffsetX = item.shadowOffsetX || 2;
+          ctx.shadowOffsetY = item.shadowOffsetY || 2;
+        } else {
+          ctx.shadowColor = "transparent";
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+        }
+
         ctx.font = `${item.fontSize}px Arial`;
         ctx.fillStyle = item.color;
         ctx.fillText(item.text, item.x, item.y);
@@ -130,53 +145,6 @@ export default function Home() {
         <Button onClick={addNewTextItem} variant="outline" className="w-full">
           Add New Text
         </Button>
-
-        {/* Shadow controls */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2">
-              <Input
-                type="checkbox"
-                checked={useShadow}
-                onChange={(e) => setUseShadow(e.target.checked)}
-                className="w-4 h-4"
-              />
-              <span className="text-sm">Text Shadow</span>
-            </label>
-          </div>
-
-          {useShadow && (
-            <>
-              <Input
-                type="color"
-                value={shadowColor}
-                onChange={(e) => setShadowColor(e.target.value)}
-                className="w-12 h-10 p-1"
-              />
-              <Input
-                type="number"
-                value={shadowBlur}
-                onChange={(e) => setShadowBlur(Number(e.target.value))}
-                className="w-20"
-                placeholder="Blur"
-              />
-              <Input
-                type="number"
-                value={shadowOffsetX}
-                onChange={(e) => setShadowOffsetX(Number(e.target.value))}
-                className="w-20"
-                placeholder="Offset X"
-              />
-              <Input
-                type="number"
-                value={shadowOffsetY}
-                onChange={(e) => setShadowOffsetY(Number(e.target.value))}
-                className="w-20"
-                placeholder="Offset Y"
-              />
-            </>
-          )}
-        </div>
 
         <Button onClick={addTextToCanvas}>Update Canvas</Button>
       </div>
