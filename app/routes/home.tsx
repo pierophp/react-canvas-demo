@@ -10,20 +10,27 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 
+interface TextItem {
+  id: string;
+  text: string;
+  color: string;
+  x: number;
+  y: number;
+}
+
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Canvas Demo" },
+    { name: "description", content: "Canvas Demo!" },
   ];
 }
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [text, setText] = useState("");
-  const [textColor, setTextColor] = useState("#FFFFFF");
+  const [textItems, setTextItems] = useState<TextItem[]>([
+    { id: "1", text: "", color: "#FFFFFF", x: 20, y: 40 },
+  ]);
   const [fontSize, setFontSize] = useState("24");
-  const [positionX, setPositionX] = useState(20);
-  const [positionY, setPositionY] = useState(40);
   // Shadow states
   const [shadowColor, setShadowColor] = useState("#000000");
   const [shadowBlur, setShadowBlur] = useState(4);
@@ -47,6 +54,29 @@ export default function Home() {
     };
   }, []);
 
+  const addNewTextItem = () => {
+    setTextItems((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        text: "",
+        color: "#FFFFFF",
+        x: 20,
+        y: 40 + prev.length * 30, // Offset Y position for each new item
+      },
+    ]);
+  };
+
+  const updateTextItem = (id: string, updates: Partial<TextItem>) => {
+    setTextItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
+    );
+  };
+
+  const removeTextItem = (id: string) => {
+    setTextItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
   const addTextToCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -60,9 +90,7 @@ export default function Home() {
     img.onload = () => {
       ctx.drawImage(img, 0, 0);
 
-      ctx.font = `${fontSize}px Arial`;
-      ctx.fillStyle = textColor;
-
+      // Set shadow properties
       if (useShadow) {
         ctx.shadowColor = shadowColor;
         ctx.shadowBlur = shadowBlur;
@@ -75,7 +103,12 @@ export default function Home() {
         ctx.shadowOffsetY = 0;
       }
 
-      ctx.fillText(text, positionX, positionY);
+      // Draw each text item
+      textItems.forEach((item) => {
+        ctx.font = `${fontSize}px Arial`;
+        ctx.fillStyle = item.color;
+        ctx.fillText(item.text, item.x, item.y);
+      });
     };
   };
 
@@ -84,21 +117,9 @@ export default function Home() {
       <canvas ref={canvasRef} className="border border-gray-300 rounded-lg" />
 
       <div className="grid gap-4">
-        {/* Text and basic controls */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Input
-            type="text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Enter text..."
-            className="max-w-sm"
-          />
-          <Input
-            type="color"
-            value={textColor}
-            onChange={(e) => setTextColor(e.target.value)}
-            className="w-12 h-10 p-1"
-          />
+        {/* Font size selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm">Font Size:</span>
           <Select value={fontSize} onValueChange={setFontSize}>
             <SelectTrigger className="w-24">
               <SelectValue placeholder="Size" />
@@ -113,26 +134,59 @@ export default function Home() {
           </Select>
         </div>
 
-        {/* Position controls */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Position:</span>
+        {/* Text items */}
+        {textItems.map((item) => (
+          <div key={item.id} className="flex items-center gap-2 flex-wrap">
             <Input
-              type="number"
-              value={positionX}
-              onChange={(e) => setPositionX(Number(e.target.value))}
-              className="w-20"
-              placeholder="X"
+              type="text"
+              value={item.text}
+              onChange={(e) =>
+                updateTextItem(item.id, { text: e.target.value })
+              }
+              placeholder="Enter text..."
+              className="max-w-sm"
             />
             <Input
-              type="number"
-              value={positionY}
-              onChange={(e) => setPositionY(Number(e.target.value))}
-              className="w-20"
-              placeholder="Y"
+              type="color"
+              value={item.color}
+              onChange={(e) =>
+                updateTextItem(item.id, { color: e.target.value })
+              }
+              className="w-12 h-10 p-1"
             />
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={item.x}
+                onChange={(e) =>
+                  updateTextItem(item.id, { x: Number(e.target.value) })
+                }
+                className="w-20"
+                placeholder="X"
+              />
+              <Input
+                type="number"
+                value={item.y}
+                onChange={(e) =>
+                  updateTextItem(item.id, { y: Number(e.target.value) })
+                }
+                className="w-20"
+                placeholder="Y"
+              />
+            </div>
+            <Button
+              variant="destructive"
+              onClick={() => removeTextItem(item.id)}
+              className="px-2 h-9"
+            >
+              Remove
+            </Button>
           </div>
-        </div>
+        ))}
+
+        <Button onClick={addNewTextItem} variant="outline" className="w-full">
+          Add New Text
+        </Button>
 
         {/* Shadow controls */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -181,7 +235,7 @@ export default function Home() {
           )}
         </div>
 
-        <Button onClick={addTextToCanvas}>Add Text</Button>
+        <Button onClick={addTextToCanvas}>Update Canvas</Button>
       </div>
     </div>
   );
