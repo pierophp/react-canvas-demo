@@ -2,6 +2,13 @@ import type { Route } from "./+types/home";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -13,6 +20,8 @@ export function meta({}: Route.MetaArgs) {
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [text, setText] = useState("");
+  const [textColor, setTextColor] = useState("#FFFFFF");
+  const [fontSize, setFontSize] = useState("24");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,15 +46,15 @@ export default function Home() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.font = "24px Arial";
-    ctx.fillStyle = "white";
+    ctx.font = `${fontSize}px Arial`;
+    ctx.fillStyle = textColor;
     ctx.fillText(text, 20, 40);
   };
 
   return (
     <div className="p-4 space-y-4">
       <canvas ref={canvasRef} className="border border-gray-300 rounded-lg" />
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Input
           type="text"
           value={text}
@@ -53,6 +62,24 @@ export default function Home() {
           placeholder="Enter text..."
           className="max-w-sm"
         />
+        <Input
+          type="color"
+          value={textColor}
+          onChange={(e) => setTextColor(e.target.value)}
+          className="w-12 h-10 p-1"
+        />
+        <Select value={fontSize} onValueChange={setFontSize}>
+          <SelectTrigger className="w-24">
+            <SelectValue placeholder="Size" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="16">16px</SelectItem>
+            <SelectItem value="24">24px</SelectItem>
+            <SelectItem value="32">32px</SelectItem>
+            <SelectItem value="48">48px</SelectItem>
+            <SelectItem value="64">64px</SelectItem>
+          </SelectContent>
+        </Select>
         <Button onClick={addTextToCanvas}>Add Text</Button>
       </div>
     </div>
