@@ -31,7 +31,6 @@ export default function Home() {
   const [textItems, setTextItems] = useState<TextItem[]>([
     { id: "1", text: "", color: "#FFFFFF", x: 20, y: 40 },
   ]);
-  const [fontSize, setFontSize] = useState("24");
   // Shadow states
   const [shadowColor, setShadowColor] = useState("#000000");
   const [shadowBlur, setShadowBlur] = useState(4);
@@ -106,7 +105,7 @@ export default function Home() {
 
       // Draw each text item
       textItems.forEach((item) => {
-        ctx.font = `${fontSize}px Arial`;
+        ctx.font = `${item.fontSize}px Arial`;
         ctx.fillStyle = item.color;
         ctx.fillText(item.text, item.x, item.y);
       });
@@ -118,23 +117,6 @@ export default function Home() {
       <canvas ref={canvasRef} className="border border-gray-300 rounded-lg" />
 
       <div className="grid gap-4">
-        {/* Font size selector */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm">Font Size:</span>
-          <Select value={fontSize} onValueChange={setFontSize}>
-            <SelectTrigger className="w-24">
-              <SelectValue placeholder="Size" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="16">16px</SelectItem>
-              <SelectItem value="24">24px</SelectItem>
-              <SelectItem value="32">32px</SelectItem>
-              <SelectItem value="48">48px</SelectItem>
-              <SelectItem value="64">64px</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Text items */}
         {textItems.map((item) => (
           <TextItem
