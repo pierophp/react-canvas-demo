@@ -1,15 +1,9 @@
 import type { Route } from "./+types/home";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { TextItem } from "~/components/TextItem";
+import { generateCanvas } from "~/actions/canvas";
+import { type ActionFunctionArgs } from "react-router";
 
 interface TextItem {
   id: string;
@@ -23,6 +17,23 @@ interface TextItem {
   shadowBlur?: number;
   shadowOffsetX?: number;
   shadowOffsetY?: number;
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const textItems = JSON.parse(formData.get("textItems") as string);
+
+  const buffer = await generateCanvas(textItems);
+
+  console.log(`Buffer size: ${buffer.length}`);
+
+  return new Response(buffer, {
+    headers: {
+      "Content-Type": "image/jpeg",
+      "Content-Disposition": "attachment; filename=canvas.jpg",
+      "Content-Length": buffer.length.toString(),
+    },
+  });
 }
 
 export function meta({}: Route.MetaArgs) {
@@ -127,6 +138,27 @@ export default function Home() {
     };
   };
 
+  const downloadCanvas = async () => {
+    const formData = new FormData();
+    formData.append("textItems", JSON.stringify(textItems));
+
+    const response = await fetch("/?index", {
+      method: "POST",
+      body: formData,
+    });
+
+    const blob = await response.blob();
+    console.log(`Blob size: ${blob.size}`);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "canvas.jpg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="p-4 space-y-4">
       <canvas ref={canvasRef} className="border border-gray-300 rounded-lg" />
@@ -147,6 +179,9 @@ export default function Home() {
         </Button>
 
         <Button onClick={addTextToCanvas}>Update Canvas</Button>
+        <Button onClick={downloadCanvas} variant="secondary">
+          Download Canvas
+        </Button>
       </div>
     </div>
   );
