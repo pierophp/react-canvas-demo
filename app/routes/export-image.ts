@@ -1,4 +1,4 @@
-import { generateCanvas } from "~/actions/canvas";
+import { generateCanvas } from "~/actions/canvas.server";
 import type { Route } from "./+types/export-image";
 
 export async function action({ request }: Route.ActionArgs) {

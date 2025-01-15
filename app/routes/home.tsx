@@ -2,8 +2,9 @@ import type { Route } from "./+types/home";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { TextItem } from "~/components/TextItem";
+import { drawCanvas } from "~/actions/draw.canvas";
 
-interface TextItem {
+export interface TextItem {
   id: string;
   text: string;
   color: string;
@@ -54,7 +55,7 @@ export default function Home() {
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
+      drawCanvas(ctx, img, []);
     };
   }, []);
 
@@ -97,25 +98,7 @@ export default function Home() {
     const img = new Image();
     img.src = "/tree.jpg";
     img.onload = () => {
-      ctx.drawImage(img, 0, 0);
-
-      textItems.forEach((item) => {
-        if (item.useShadow) {
-          ctx.shadowColor = item.shadowColor || "#000000";
-          ctx.shadowBlur = item.shadowBlur || 4;
-          ctx.shadowOffsetX = item.shadowOffsetX || 2;
-          ctx.shadowOffsetY = item.shadowOffsetY || 2;
-        } else {
-          ctx.shadowColor = "transparent";
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
-        }
-
-        ctx.font = `${item.fontSize}px Arial`;
-        ctx.fillStyle = item.color;
-        ctx.fillText(item.text, item.x, item.y);
-      });
+      drawCanvas(ctx, img, textItems);
     };
   };
 
