@@ -1,5 +1,4 @@
 import { createCanvas, loadImage } from "canvas";
-import { writeFile } from "fs/promises";
 import type { TextItem } from "~/types";
 
 export async function generateCanvas(textItems: TextItem[]) {
@@ -36,8 +35,5 @@ export async function generateCanvas(textItems: TextItem[]) {
     ctx.fillText(item.text, item.x, item.y);
   });
 
-  await writeFile("canvas.jpg", canvas.toBuffer("image/jpeg"));
-
-  // Convert canvas to buffer
   return canvas.toBuffer("image/jpeg");
 }

@@ -2,8 +2,6 @@ import type { Route } from "./+types/home";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { TextItem } from "~/components/TextItem";
-import { generateCanvas } from "~/actions/canvas";
-import { type ActionFunctionArgs } from "react-router";
 
 interface TextItem {
   id: string;
@@ -17,23 +15,6 @@ interface TextItem {
   shadowBlur?: number;
   shadowOffsetX?: number;
   shadowOffsetY?: number;
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-  const formData = await request.formData();
-  const textItems = JSON.parse(formData.get("textItems") as string);
-
-  const buffer = await generateCanvas(textItems);
-
-  console.log(`Buffer size: ${buffer.length}`);
-
-  return new Response(buffer, {
-    headers: {
-      "Content-Type": "image/jpeg",
-      "Content-Disposition": "attachment; filename=canvas.jpg",
-      "Content-Length": buffer.length.toString(),
-    },
-  });
 }
 
 export function meta({}: Route.MetaArgs) {
@@ -85,7 +66,7 @@ export default function Home() {
         text: "",
         color: "#FFFFFF",
         x: 20,
-        y: 40 + prev.length * 30, // Offset Y position for each new item
+        y: 40 + prev.length * 30,
         fontSize: "16",
         useShadow: false,
         shadowColor: "#000000",
@@ -142,21 +123,21 @@ export default function Home() {
     const formData = new FormData();
     formData.append("textItems", JSON.stringify(textItems));
 
-    const response = await fetch("/?index", {
+    const response = await fetch("/export-image", {
       method: "POST",
       body: formData,
     });
 
-    const blob = await response.blob();
-    console.log(`Blob size: ${blob.size}`);
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "canvas.jpg";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    if (response.ok) {
+      const url = window.URL.createObjectURL(await response.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "canvas.jpg";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }
   };
 
   return (
@@ -180,7 +161,7 @@ export default function Home() {
 
         <Button onClick={addTextToCanvas}>Update Canvas</Button>
         <Button onClick={downloadCanvas} variant="secondary">
-          Download Canvas
+          {"Download Canvas"}
         </Button>
       </div>
     </div>
